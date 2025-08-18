@@ -1,0 +1,27 @@
+[package]
+name = "lsm6dsv16x-rs"
+version = "1.0.0"
+edition = "2024"
+rust-version = "1.85.1"
+readme = "README.md"
+license = "BSD-3-Clause"
+categories = ["embedded", "no-std"]
+keywords = ["st", "mems", "imu", "mlc", "fsm"]
+repository = "https://github.com/STMicroelectronics/lsm6dsv16x-rs"
+description = """
+    Platform-agnostic driver for the LSM6DSV16X high-performance 6-axis IMU with triple-channel
+    architecture, FSM, MLC, adaptive self-configuration, Qvar, and analog hub.
+"""
+
+[dependencies]
+embedded-hal = "1.0.0"
+bitfield-struct = "0.10.0"
+half = { version = "1.7", default-features = false }
+st-mems-bus = "1.0.0"
+derive_more = { version = "2.0.1", default-features = false, features = [ "try_from" ] }
+st-mem-bank-macro = "1.0.0"
+
+# By default the bit order is assumed as Least Significant Bit.
+[features]
+passthrough = []
+bit_order_msb = []

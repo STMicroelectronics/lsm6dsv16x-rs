@@ -1,0 +1,37 @@
+{
+    /* 
+     * Requires the Rust Language Server (rust-analyzer) and Cortex-Debug extensions
+     * https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer
+     * https://marketplace.visualstudio.com/items?itemName=marus25.cortex-debug
+     */
+    "version": "0.2.0",
+    "configurations": [
+        {
+            /* Configuration for the STM32F401RE Nucleo board */
+            "type": "cortex-debug",
+            "request": "launch",
+            "name": "Debug (OpenOCD)",
+            "servertype": "openocd",
+            "cwd": "${workspaceRoot}",
+            "preLaunchTask": "Cargo Build (debug)",
+            "runToEntryPoint": "main",
+            "executable": "./target/thumbv7em-none-eabihf/debug/pedometer_stm32f401re",
+            "device": "STM32F401RET6",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f4x.cfg"
+            ],
+            "showDevDebugOutput": "raw",
+            "svdFile": "${workspaceRoot}/.vscode/STM32F401.svd",
+            "swoConfig": {
+                "enabled": true,
+                "cpuFrequency": 8000000,
+                "swoFrequency": 2000000,
+                "source": "probe",
+                "decoders": [
+                    { "type": "console", "label": "ITM", "port": 0 }
+                ]
+            }
+        }
+    ]
+}

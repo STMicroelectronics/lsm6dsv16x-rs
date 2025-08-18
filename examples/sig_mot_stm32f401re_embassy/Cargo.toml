@@ -1,0 +1,56 @@
+[package]
+authors = ["STMircroelectronics"]
+edition = "2021"
+readme = "README.md"
+name = "sig_mot_stm32f401re_embassy"
+version = "0.1.0"
+
+[dependencies]
+cortex-m = { version = "0.7.6", features = ["inline-asm", "critical-section-single-core"] }
+cortex-m-rt = "0.7.3"
+cortex-m-semihosting = "0.5.0"
+panic-halt = "0.2.0"
+embedded-hal = "1.0.0"
+embedded-hal-bus = { version = "0.2", features = ["async"] }
+heapless = { version = "0.8", default-features = false }
+defmt = "0.3"
+defmt-rtt = "0.4"
+embassy-futures = "0.1.0"
+embedded-io = "0.6.0" 
+embedded-io-async = "0.6.1"
+
+[dependencies.lsm6dsv16x-rs]
+path = "../../"
+default-features = false
+
+[dependencies.panic-probe]
+version = "0.3"
+features = ["print-defmt"] 
+
+[dependencies.embassy-executor]
+version = "0.6.0" 
+features = ["task-arena-size-32768", "arch-cortex-m", "executor-thread", "executor-interrupt", "defmt", "integrated-timers"]
+
+[dependencies.embassy-time]
+version = "0.3.2" 
+features = ["defmt", "defmt-timestamp-uptime", "tick-hz-32_768"]
+
+[dependencies.embassy-stm32]
+version = "0.1.0" 
+features = ["stm32f401re", "exti", "time-driver-any", "chrono", "unstable-pac", "memory-x"]
+
+# this lets you use `cargo fix`!
+[[bin]]
+name = "sig_mot_stm32f401re_embassy"
+test = false
+bench = false
+
+[profile.release]
+codegen-units = 1 # better optimizations
+debug = true # symbols are nice and they don't increase the size on Flash
+lto = true # better optimizations
+
+# The macro below is used to configure the bit order as Most Significant Bit.
+# By default the bit order is assumed as Least Significant Bit.
+[features]
+bit_order_msb = ["lsm6dsv16x-rs/bit_order_msb"]

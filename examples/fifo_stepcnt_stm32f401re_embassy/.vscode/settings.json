@@ -1,0 +1,7 @@
+{
+    "cSpell.words": [
+        "bitfield"
+    ],
+    "cortex-debug.variableUseNaturalFormat": true,
+    "rust-analyzer.procMacro.enable": true
+}

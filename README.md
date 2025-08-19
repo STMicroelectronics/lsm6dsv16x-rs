@@ -1,4 +1,11 @@
 # lsm6dsv16x-rs
+[![Crates.io][crates-badge]][crates-url]
+[![BSD 3-Clause licensed][bsd-badge]][bsd-url]
+
+[crates-badge]: https://img.shields.io/crates/v/lsm6dsv16x-rs
+[crates-url]: https://crates.io/crates/lsm6dsv16x-rs
+[bsd-badge]: https://img.shields.io/crates/l/lsm6dsv16x-rs
+[bsd-url]: https://opensource.org/licenses/BSD-3-Clause
 
 Provides a platform-agnostic, no_std-compatible driver for the ST LSM6DSV16X IMU, supporting both I2C and SPI communication interfaces.
 

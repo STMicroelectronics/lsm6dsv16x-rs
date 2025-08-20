@@ -11,10 +11,7 @@ cortex-m-rt = "0.7.3"
 cortex-m-semihosting = "0.5.0"
 libm = "0.2.15"
 panic-halt = "0.2.0"
-
-[dependencies.lsm6dsv16x-rs]
-path = "../../"
-default-features = false
+lsm6dsv16x-rs = "1.0.0"
 
 # Uncomment for the panic example.
 # panic-itm = "0.4.1"

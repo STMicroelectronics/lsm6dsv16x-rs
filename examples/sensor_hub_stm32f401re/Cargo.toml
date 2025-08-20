@@ -12,19 +12,9 @@ cortex-m-semihosting = "0.5.0"
 panic-halt = "0.2.0"
 st-mems-bus = "1.0.0"
 embedded-hal = "1.0.0"
-
-[dependencies.lsm6dsv16x-rs]
-path = "../../"
-features = [ "passthrough" ]
-default-features = false
-
-[dependencies.lis2mdl-rs]
-path = "../../../lis2mdl/"
-default-features = false
-
-[dependencies.lps22df-rs]
-path = "../../../lps22df/"
-default-features = false
+lsm6dsv16x-rs = { version = "1.0.0", features = [ "passthrough" ] }
+lis2mdl-rs = "1.0.0"
+lps22df-rs = "1.0.0"
 
 # Uncomment for the panic example.
 # panic-itm = "0.4.1"

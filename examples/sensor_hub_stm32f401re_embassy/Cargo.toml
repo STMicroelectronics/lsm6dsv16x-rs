@@ -19,19 +19,9 @@ embassy-futures = "0.1.0"
 embedded-io = "0.6.0" 
 embedded-io-async = "0.6.1"
 st-mems-bus = "1.0.0"
-
-[dependencies.lsm6dsv16x-rs]
-path = "../../"
-features = [ "passthrough" ]
-default-features = false
-
-[dependencies.lis2mdl-rs]
-path = "../../../lis2mdl/"
-default-features = false
-
-[dependencies.lps22df-rs]
-path = "../../../lps22df/"
-default-features = false
+lsm6dsv16x-rs = { version = "1.0.0", features = [ "passthrough" ] }
+lis2mdl-rs = "1.0.0"
+lps22df-rs = "1.0.0"
 
 [dependencies.panic-probe]
 version = "0.3"

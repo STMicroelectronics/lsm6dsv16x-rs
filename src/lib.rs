@@ -489,7 +489,7 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T> {
     /// Number of data generated in reference period when ODR-triggered mode is set.
     /// Allowed values: 0 (default) or 4 to 255.
     pub fn odr_trig_cfg_set(&mut self, val: u8) -> Result<(), Error<B::Error>> {
-        if !(1..=3).contains(&val) {
+        if (1..=3).contains(&val) {
             return Err(Error::UnexpectedValue);
         }
 

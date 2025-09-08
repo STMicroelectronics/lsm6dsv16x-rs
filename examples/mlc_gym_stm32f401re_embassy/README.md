@@ -1,6 +1,6 @@
 # LSM6DSV16X 4D Gesture Detection on STM32F401RE Nucleo with I2C and External Interrupt (Embassy Executor)
 
-This example demonstrates how to detect 4D gestures (X/Y up/down events) using the **LSM6DSV16X** inertial measurement unit (IMU) sensor interfaced with an **STM32F401RE** microcontroller board. The sensor is configured via a UCF-generated register sequence to recognize these gestures.
+This example demonstrates how to detect 4D gestures (X/Y up/down events) using the **LSM6DSV16X** inertial measurement unit (IMU) sensor interfaced with an **STM32F401RE** microcontroller board. The sensor is configured via a JSON-generated register sequence to recognize these gestures.
 
 The program uses the **Embassy** asynchronous executor framework for embedded Rust, communicating with the sensor over I2C and outputting detected gesture events over UART.
 
@@ -37,13 +37,13 @@ The LSM6DSV16X sensor is connected to the STM32F401RE via the I2C1 peripheral on
 - The interrupt pin PB4 is configured as an input with external interrupt capability.
 - A delay abstraction from Embassy is used for timing.
 
-### Sensor Setup via UCF Configuration
+### Sensor Setup via JSON Configuration
 
 - The LSM6DSV16X sensor is initialized over I2C.
 - The device ID is read and verified to confirm sensor presence.
 - The sensor is reset to default configuration and the program waits until reset completes.
-- The sensor is configured by applying a sequence of register writes and delays defined in the `FOUR_D` array, which is generated from a UCF file and programs the sensor for 4D gesture detection.
-- This approach allows flexible and maintainable sensor configuration by editing UCF files and regenerating Rust code.
+- The sensor is configured by applying a sequence of register writes and delays defined in the `FOUR_D` array, which is generated from a JSON file and programs the sensor for 4D gesture detection.
+- This approach allows flexible and maintainable sensor configuration by editing JSON files and regenerating Rust code.
 
 ### Event Loop
 
@@ -63,7 +63,7 @@ The LSM6DSV16X sensor is connected to the STM32F401RE via the I2C1 peripheral on
 
 1. Connect the LSM6DSV16X sensor to the STM32F401RE Nucleo board via I2C on pins PB8 (SCL) and PB9 (SDA).
 2. Connect the sensor's interrupt line to PB4 on the STM32F401RE.
-3. Build the Rust project; the UCF configuration is embedded in the code as the `FOUR_D` array.
+3. Build the Rust project; the JSON configuration is embedded in the code as the `FOUR_D` array.
 4. Flash the compiled firmware onto the STM32F401RE.
 5. Open a serial terminal at 115200 baud on the USART2 TX pin (PA2).
 6. Perform gestures that trigger sensor events.
@@ -75,7 +75,7 @@ The LSM6DSV16X sensor is connected to the STM32F401RE via the I2C1 peripheral on
 
 - This example uses Embassy's async executor to wait for GPIO interrupts.
 - UART output is done via blocking writes; DMA-based asynchronous UART transmission is not implemented here.
-- The sensor is configured via a UCF-generated register sequence embedded in the code.
+- The sensor is configured via a JSON-generated register sequence embedded in the code.
 - The environment is `#![no_std]` and `#![no_main]` for embedded Rust applications.
 - Panic behavior is set to use `panic_probe` for debugging.
 
@@ -89,4 +89,4 @@ The LSM6DSV16X sensor is connected to the STM32F401RE via the I2C1 peripheral on
 
 ---
 
-*This README provides a detailed explanation of the embedded Rust program for 4D gesture detection on STM32F401RE using the LSM6DSV16X sensor and UCF-generated configuration code.*
+*This README provides a detailed explanation of the embedded Rust program for 4D gesture detection on STM32F401RE using the LSM6DSV16X sensor and JSON-generated configuration code.*

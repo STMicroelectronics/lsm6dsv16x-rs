@@ -17,9 +17,11 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 
 fn main() {
-    let input_file = Path::new("lsm6dsv16x_glance_detection.ucf");
+    // Source file:
+    // https://github.com/STMicroelectronics/st-mems-finite-state-machine/blob/main/examples/glance_detection/lsm6dsv16x/lsm6dsv16x_glance.json
+    let input_file = Path::new("lsm6dsv16x_glance.json");
     let output_file = Path::new("src/glance_detection.rs");
-    parser::generate_rs_from_ucf(&input_file, &output_file, "GLANCE_DETECTION");
+    parser::generate_rs_from_json(&input_file, &output_file, "GLANCE_DETECTION", "LSM6DSV16X", false);
 
     // Put `memory.x` in our output directory and ensure it's
     // on the linker search path.
@@ -35,6 +37,7 @@ fn main() {
     // here, we ensure the build script is only re-run when
     // `memory.x` is changed.
     println!("cargo:rerun-if-changed=memory.x");
+    println!("cargo:rerun-if-changed=lsm6dsv16x_glance.json");
 
     // Specify linker arguments.
 

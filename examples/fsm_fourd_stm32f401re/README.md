@@ -2,9 +2,9 @@
 
 This example demonstrates how to interface the **LSM6DSV16X** inertial measurement unit (IMU) sensor with an **STM32F401RE** microcontroller board to detect 4D gestures (X/Y up/down events) using the sensor's finite state machine (FSM) capabilities.
 
-The program configures the sensor via a predefined UCF-generated register sequence, sets up an external interrupt on a GPIO pin connected to the sensor's interrupt line, and outputs detected gesture events over UART.
+The program configures the sensor via a predefined JSON-generated register sequence, sets up an external interrupt on a GPIO pin connected to the sensor's interrupt line, and outputs detected gesture events over UART.
 
-The code is written in Rust using the `stm32f4xx-hal` hardware abstraction layer and the `lsm6dsv16x` sensor driver crate. It leverages a UCF configuration embedded in the code to program the sensor FSM for gesture detection.
+The code is written in Rust using the `stm32f4xx-hal` hardware abstraction layer and the `lsm6dsv16x` sensor driver crate. It leverages a JSON configuration embedded in the code to program the sensor FSM for gesture detection.
 
 ---
 
@@ -40,13 +40,13 @@ The LSM6DSV16X sensor is connected to the STM32F401RE via the I2C1 peripheral on
 - The external interrupt is enabled in the NVIC and linked to the EXTI4 interrupt handler.
 - The interrupt pin is stored in a global mutex-protected static for safe access in the interrupt handler.
 
-### Sensor Setup via UCF Configuration
+### Sensor Setup via JSON Configuration
 
 - The LSM6DSV16X sensor is initialized over I2C.
 - The device ID is read and verified to confirm sensor presence.
 - The sensor is reset to default configuration and the program waits until the reset completes.
-- The sensor is configured by applying a sequence of register writes and delays defined in the `FOUR_D` array, which is generated from a UCF file and programs the sensor's FSM for 4D gesture detection.
-- This approach allows flexible and maintainable sensor configuration by editing UCF files and regenerating Rust code.
+- The sensor is configured by applying a sequence of register writes and delays defined in the `FOUR_D` array, which is generated from a JSON file and programs the sensor's FSM for 4D gesture detection.
+- This approach allows flexible and maintainable sensor configuration by editing JSON files and regenerating Rust code.
 
 ### Main Loop and Event Handling
 
@@ -70,7 +70,7 @@ The LSM6DSV16X sensor is connected to the STM32F401RE via the I2C1 peripheral on
 
 1. Connect the LSM6DSV16X sensor to the STM32F401RE Nucleo board via I2C on pins PB8 (SCL) and PB9 (SDA).
 2. Connect the sensor's FSM interrupt line to PB4 on the STM32F401RE.
-3. Build the Rust project; the UCF configuration is embedded in the code as the `FOUR_D` array.
+3. Build the Rust project; the JSON configuration is embedded in the code as the `FOUR_D` array.
 4. Flash the compiled firmware onto the STM32F401RE.
 5. Open a serial terminal at 115200 baud on the USART2 TX pin (PA2).
 6. Perform gestures that trigger FSM events.
@@ -81,7 +81,7 @@ The LSM6DSV16X sensor is connected to the STM32F401RE via the I2C1 peripheral on
 ## Notes
 
 - The example uses a blocking wait-for-interrupt loop to detect FSM events.
-- The sensor FSM is configured via a UCF-generated register sequence embedded in the code.
+- The sensor FSM is configured via a JSON-generated register sequence embedded in the code.
 - The interrupt handler only clears the interrupt flag; all sensor communication occurs in the main loop.
 - The environment is `#![no_std]` and `#![no_main]` for embedded Rust applications.
 - Panic behavior is set to halt on panic (`panic_halt`).
@@ -96,4 +96,4 @@ The LSM6DSV16X sensor is connected to the STM32F401RE via the I2C1 peripheral on
 
 ---
 
-*This README provides a detailed explanation of the embedded Rust program for 4D gesture detection on STM32F401RE using the LSM6DSV16X sensor and UCF-generated FSM configuration.*
+*This README provides a detailed explanation of the embedded Rust program for 4D gesture detection on STM32F401RE using the LSM6DSV16X sensor and JSON-generated FSM configuration.*

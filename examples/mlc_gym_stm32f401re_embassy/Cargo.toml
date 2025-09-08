@@ -18,11 +18,11 @@ defmt-rtt = "0.4"
 embassy-futures = "0.1.0"
 embedded-io = "0.6.0" 
 embedded-io-async = "0.6.1"
-st-mems-reg-config-conv = { version = "1.0.0" }
+st-mems-reg-config-conv = { version = "1.0.2" }
 lsm6dsv16x-rs = "1.0.0"
 
 [build-dependencies]
-st-mems-reg-config-conv = { version = "1.0.0", features = ["std"] }
+st-mems-reg-config-conv = { version = "1.0.2", features = ["std"] }
 
 [dependencies.panic-probe]
 version = "0.3"

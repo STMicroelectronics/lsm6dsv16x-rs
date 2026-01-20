@@ -13,6 +13,9 @@ description = """
     architecture, FSM, MLC, adaptive self-configuration, Qvar, and analog hub.
 """
 
+[lib]
+doctest = false
+
 [dependencies]
 embedded-hal = "1.0.0"
 bitfield-struct = "0.10.0"

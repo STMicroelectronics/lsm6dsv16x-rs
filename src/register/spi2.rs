@@ -1,11 +1,11 @@
-use crate::Error;
-use crate::Lsm6dsv16x;
+use super::super::{
+    BusOperation, DelayNs, Error, Lsm6dsv16x, RegisterOperation, SensorOperation, bisync,
+    register::MainBank,
+};
 use bitfield_struct::bitfield;
+
 use derive_more::TryFrom;
-use embedded_hal::delay::DelayNs;
-use st_mem_bank_macro::named_register;
-use st_mem_bank_macro::register;
-use st_mems_bus::BusOperation;
+use st_mem_bank_macro::{named_register, register};
 
 #[repr(u8)]
 #[derive(Clone, Copy, PartialEq)]
@@ -36,7 +36,7 @@ pub enum Spi2Reg {
 /// SPI2_WHO_AM_I (0x0F)
 ///
 /// WHO_AM_I register (R), read-only, fixed value 0x70.
-#[register(address = Spi2Reg::WhoAmI, access_type = Lsm6dsv16x, generics = 2)]
+#[register(address = Spi2Reg::WhoAmI, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Spi2WhoAmI {
@@ -48,7 +48,7 @@ pub struct Spi2WhoAmI {
 /// SPI2_STATUS_REG_OIS (0x1E)
 ///
 /// SPI2 status register for OIS (R)
-#[register(address = Spi2Reg::StatusRegOis, access_type = Lsm6dsv16x, generics = 2)]
+#[register(address = Spi2Reg::StatusRegOis, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Spi2StatusRegOis {
@@ -68,7 +68,7 @@ pub struct Spi2StatusRegOis {
 /// SPI2_OUT_TEMP_L (0x20)
 ///
 /// Temperature data output register low byte (R)
-#[register(address = Spi2Reg::OutTempL, access_type = Lsm6dsv16x, generics = 2)]
+#[register(address = Spi2Reg::OutTempL, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Spi2OutTempL {
@@ -80,7 +80,7 @@ pub struct Spi2OutTempL {
 /// SPI2_OUT_TEMP_H (0x21)
 ///
 /// Temperature data output register high byte (R)
-#[register(address = Spi2Reg::OutTempH, access_type = Lsm6dsv16x, generics = 2)]
+#[register(address = Spi2Reg::OutTempH, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Spi2OutTempH {
@@ -93,7 +93,7 @@ pub struct Spi2OutTempH {
 ///
 /// Angular rate sensor pitch axis (X, Y, Z) angular rate output registers (R)
 /// Data according to gyroscope full-scale and ODR (7.68 kHz) settings of OIS gyroscope.
-#[named_register(address = Spi2Reg::OutxLGOis, access_type = Lsm6dsv16x, generics = 2)]
+#[named_register(address = Spi2Reg::OutxLGOis, access_type="Lsm6dsv16x<B, T, MainBank>")]
 pub struct Spi2OutXYZGOis {
     pub x: i16,
     pub y: i16,
@@ -104,7 +104,7 @@ pub struct Spi2OutXYZGOis {
 ///
 /// Linear acceleration sensor X-axis output register low byte (R)
 /// Data according to accelerometer full scale and ODR (7.68 kHz) settings of OIS accelerometer.
-#[register(address = Spi2Reg::OutxLAOis, access_type = Lsm6dsv16x, generics = 2)]
+#[register(address = Spi2Reg::OutxLAOis, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Spi2OutxLAOis {
@@ -116,7 +116,7 @@ pub struct Spi2OutxLAOis {
 /// SPI2_OUTX_H_A_OIS (0x29)
 ///
 /// Linear acceleration sensor X-axis output register high byte (R)
-#[register(address = Spi2Reg::OutxHAOis, access_type = Lsm6dsv16x, generics = 2)]
+#[register(address = Spi2Reg::OutxHAOis, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Spi2OutxHAOis {
@@ -128,7 +128,7 @@ pub struct Spi2OutxHAOis {
 /// SPI2_OUTY_L_A_OIS (0x2A)
 ///
 /// Linear acceleration sensor Y-axis output register low byte (R)
-#[register(address = Spi2Reg::OutyLAOis, access_type = Lsm6dsv16x, generics = 2)]
+#[register(address = Spi2Reg::OutyLAOis, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Spi2OutyLAOis {
@@ -140,7 +140,7 @@ pub struct Spi2OutyLAOis {
 /// SPI2_OUTY_H_A_OIS (0x2B)
 ///
 /// Linear acceleration sensor Y-axis output register high byte (R)
-#[register(address = Spi2Reg::OutyHAOis, access_type = Lsm6dsv16x, generics = 2)]
+#[register(address = Spi2Reg::OutyHAOis, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Spi2OutyHAOis {
@@ -152,7 +152,7 @@ pub struct Spi2OutyHAOis {
 /// SPI2_OUTZ_L_A_OIS (0x2C)
 ///
 /// Linear acceleration sensor Z-axis output register low byte (R)
-#[register(address = Spi2Reg::OutzLAOis, access_type = Lsm6dsv16x, generics = 2)]
+#[register(address = Spi2Reg::OutzLAOis, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Spi2OutzLAOis {
@@ -164,7 +164,7 @@ pub struct Spi2OutzLAOis {
 /// SPI2_OUTZ_H_A_OIS (0x2D)
 ///
 /// Linear acceleration sensor Z-axis output register high byte (R)
-#[register(address = Spi2Reg::OutzHAOis, access_type = Lsm6dsv16x, generics = 2)]
+#[register(address = Spi2Reg::OutzHAOis, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Spi2OutzHAOis {
@@ -176,7 +176,7 @@ pub struct Spi2OutzHAOis {
 /// SPI2_HANDSHAKE_CTRL (0x6E)
 ///
 /// Control register (SPI2 side) for UI / SPI2 shared registers (R/W)
-#[register(address = Spi2Reg::HandshakeCtrl, access_type = Lsm6dsv16x, generics = 2)]
+#[register(address = Spi2Reg::HandshakeCtrl, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Spi2HandshakeCtrl {
@@ -197,7 +197,7 @@ pub struct Spi2HandshakeCtrl {
 /// OIS interrupt configuration register and self-test setting
 /// Writable by auxiliary SPI interface when OIS_CTRL_FROM_UI bit is 0 (SPI2 full-control mode).
 /// Read-only when OIS_CTRL_FROM_UI bit is 1 (primary IF full-control mode).
-#[register(address = Spi2Reg::IntOis, access_type = Lsm6dsv16x, generics = 2)]
+#[register(address = Spi2Reg::IntOis, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Spi2IntOis {
@@ -230,7 +230,7 @@ pub struct Spi2IntOis {
 /// OIS configuration register
 /// Writable by auxiliary SPI interface when OIS_CTRL_FROM_UI bit is 0 (SPI2 full-control mode).
 /// Read-only when OIS_CTRL_FROM_UI bit is 1 (primary IF full-control mode).
-#[register(address = Spi2Reg::Ctrl1Ois, access_type = Lsm6dsv16x, generics = 2)]
+#[register(address = Spi2Reg::Ctrl1Ois, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Spi2Ctrl1Ois {
@@ -265,7 +265,7 @@ pub struct Spi2Ctrl1Ois {
 /// OIS configuration register
 /// Writable by auxiliary SPI interface when OIS_CTRL_FROM_UI bit is 0 (SPI2 full-control mode).
 /// Read-only when OIS_CTRL_FROM_UI bit is 1 (primary IF full-control mode).
-#[register(address = Spi2Reg::Ctrl2Ois, access_type = Lsm6dsv16x, generics = 2)]
+#[register(address = Spi2Reg::Ctrl2Ois, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Spi2Ctrl2Ois {
@@ -290,7 +290,7 @@ pub struct Spi2Ctrl2Ois {
 /// OIS configuration register
 /// Writable by auxiliary SPI interface when OIS_CTRL_FROM_UI bit is 0 (SPI2 full-control mode).
 /// Read-only when OIS_CTRL_FROM_UI bit is 1 (primary IF full-control mode).
-#[register(address = Spi2Reg::Ctrl3Ois, access_type = Lsm6dsv16x, generics = 2)]
+#[register(address = Spi2Reg::Ctrl3Ois, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Spi2Ctrl3Ois {

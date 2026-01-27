@@ -4,11 +4,9 @@ pub mod main;
 pub mod sensor_hub;
 pub mod spi2;
 
-use crate::Error;
-use crate::Lsm6dsv16x;
-use embedded_hal::delay::DelayNs;
+use super::{BusOperation, DelayNs, Error, Lsm6dsv16x, MemBankFunctions, only_async, only_sync};
+
 use st_mem_bank_macro::mem_bank;
-use st_mems_bus::{BusOperation, MemBankFunctions};
 
 /// Memory bank selection
 ///
@@ -21,9 +19,9 @@ pub enum MemBank {
     #[main]
     MainMemBank = 0x0,
     /// Embedded function memory bank
-    #[state(EmbedFuncState, fn_name = "operate_over_embed")]
+    #[state(EmbBank, fn_name = "operate_over_embed")]
     EmbedFuncMemBank = 0x1,
     /// Sensor hub memory bank
-    #[state(SensorHubState, fn_name = "operate_over_sensorhub")]
+    #[state(SensHubBank, fn_name = "operate_over_sensorhub")]
     SensorHubMemBank = 0x2,
 }

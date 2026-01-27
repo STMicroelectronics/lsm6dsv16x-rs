@@ -1,10 +1,11 @@
-use crate::EmbedFuncState;
-use crate::Error;
+use super::super::{
+    BusOperation, DelayNs, Error, Lsm6dsv16x, RegisterOperation, SensorOperation, bisync,
+    register::EmbBank,
+};
 use bitfield_struct::bitfield;
+
 use derive_more::TryFrom;
-use embedded_hal::delay::DelayNs;
 use st_mem_bank_macro::{MultiRegister, register};
-use st_mems_bus::BusOperation;
 
 #[repr(u8)]
 #[derive(Clone, Copy, PartialEq)]
@@ -56,7 +57,7 @@ pub enum EmbReg {
 /// PAGE_SEL (0x02)
 ///
 /// Enable advanced features dedicated page (R/W)
-#[register(address = EmbReg::PageSel, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::PageSel, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct PageSel {
@@ -71,7 +72,7 @@ pub struct PageSel {
 /// EMB_FUNC_EN_A (0x04)
 ///
 /// Enable embedded functions register A (R/W)
-#[register(address = EmbReg::EmbFuncEnA, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::EmbFuncEnA, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct EmbFuncEnA {
@@ -106,7 +107,7 @@ pub struct EmbFuncEnA {
 /// EMB_FUNC_EN_B (0x05)
 ///
 /// Enable embedded functions register B (R/W)
-#[register(address = EmbReg::EmbFuncEnB, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::EmbFuncEnB, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct EmbFuncEnB {
@@ -131,7 +132,7 @@ pub struct EmbFuncEnB {
 /// EMB_FUNC_EXEC_STATUS (0x07)
 ///
 /// Embedded functions execution status register (R)
-#[register(address = EmbReg::EmbFuncExecStatus, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::EmbFuncExecStatus, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct EmbFuncExecStatus {
@@ -150,7 +151,7 @@ pub struct EmbFuncExecStatus {
 /// PAGE_ADDRESS (0x08)
 ///
 /// Page address register (R/W)
-#[register(address = EmbReg::PageAddress, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::PageAddress, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct PageAddress {
@@ -162,7 +163,7 @@ pub struct PageAddress {
 /// PAGE_VALUE (0x09)
 ///
 /// Page value register (R/W)
-#[register(address = EmbReg::PageValue, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::PageValue, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct PageValue {
@@ -174,7 +175,7 @@ pub struct PageValue {
 /// EMB_FUNC_INT1 (0x0A)
 ///
 /// INT1 pin control register for embedded functions (R/W)
-#[register(address = EmbReg::EmbFuncInt1, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::EmbFuncInt1, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct EmbFuncInt1 {
@@ -203,7 +204,7 @@ pub struct EmbFuncInt1 {
 /// FSM_INT1 (0x0B)
 ///
 /// INT1 pin control register for FSM interrupts (R/W)
-#[register(address = EmbReg::FsmInt1, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::FsmInt1, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct FsmInt1 {
@@ -236,7 +237,7 @@ pub struct FsmInt1 {
 /// MLC_INT1 (0x0D)
 ///
 /// INT1 pin control register for machine learning core interrupts (R/W)
-#[register(address = EmbReg::MlcInt1, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::MlcInt1, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct MlcInt1 {
@@ -259,7 +260,7 @@ pub struct MlcInt1 {
 /// EMB_FUNC_INT2 (0x0E)
 ///
 /// INT2 pin control register for embedded functions (R/W)
-#[register(address = EmbReg::EmbFuncInt2, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::EmbFuncInt2, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct EmbFuncInt2 {
@@ -284,7 +285,7 @@ pub struct EmbFuncInt2 {
 /// FSM_INT2 (0x0F)
 ///
 /// INT2 pin control register for FSM interrupts (R/W)
-#[register(address = EmbReg::FsmInt2, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::FsmInt2, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct FsmInt2 {
@@ -317,7 +318,7 @@ pub struct FsmInt2 {
 /// MLC_INT2 (0x11)
 ///
 /// INT2 pin control register for machine learning core interrupts (R/W)
-#[register(address = EmbReg::MlcInt2, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::MlcInt2, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct MlcInt2 {
@@ -340,7 +341,7 @@ pub struct MlcInt2 {
 /// EMB_FUNC_STATUS (0x12)
 ///
 /// Embedded function status register (R)
-#[register(address = EmbReg::EmbFuncStatus, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::EmbFuncStatus, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct EmbFuncStatus {
@@ -365,7 +366,7 @@ pub struct EmbFuncStatus {
 /// FSM_STATUS (0x13)
 ///
 /// Finite state machine status register (R)
-#[register(address = EmbReg::FsmStatus, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::FsmStatus, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct FsmStatus {
@@ -401,7 +402,7 @@ pub struct FsmStatus {
 ///
 /// Interrupt status bits for MLC interrupt events.
 /// Each bit indicates if the corresponding MLC interrupt event is detected (1) or not (0).
-#[register(address = EmbReg::MlcStatus, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::MlcStatus, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct MlcStatus {
@@ -429,7 +430,7 @@ pub struct MlcStatus {
 /// - PAGE_READ: Enables reads from the selected advanced features dedicated page.
 /// - PAGE_WRITE: Enables writes to the selected advanced features dedicated page.
 /// - EMB_FUNC_LIR: Latched interrupt mode for embedded functions.
-#[register(address = EmbReg::PageRw, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::PageRw, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct PageRw {
@@ -451,7 +452,7 @@ pub struct PageRw {
 /// Embedded functions FIFO configuration register A (R/W)
 ///
 /// Enables batching of various embedded function results into the FIFO buffer.
-#[register(address = EmbReg::EmbFuncFifoEnA, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::EmbFuncFifoEnA, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct EmbFuncFifoEnA {
@@ -481,7 +482,7 @@ pub struct EmbFuncFifoEnA {
 /// Embedded functions FIFO configuration register B (R/W)
 ///
 /// Enables batching the machine learning core filters and features in the FIFO buffer.
-#[register(address = EmbReg::EmbFuncFifoEnB, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::EmbFuncFifoEnB, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct EmbFuncFifoEnB {
@@ -499,7 +500,7 @@ pub struct EmbFuncFifoEnB {
 /// Enable FSM register (R/W)
 ///
 /// Enables finite state machine (FSM) functions FSM1 through FSM8.
-#[register(address = EmbReg::FsmEnable, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::FsmEnable, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct FsmEnable {
@@ -532,7 +533,7 @@ pub struct FsmEnable {
 /// FSM_LONG_COUNTER_L and FSM_LONG_COUNTER_H (0x48 - 0x49)
 ///
 /// Fsm long counter status register
-#[register(address = EmbReg::FsmLongCounterL, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::FsmLongCounterL, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 pub struct FsmLongCounter(pub u16);
 
 /// INT_ACK_MASK (0x4B)
@@ -541,7 +542,7 @@ pub struct FsmLongCounter(pub u16);
 ///
 /// Controls whether bits of the status registers are reset when reading in latched mode.
 /// If a bit is set to 1, the corresponding bit in the status register is not reset upon reading.
-#[register(address = EmbReg::IntAckMask, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::IntAckMask, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct IntAckMask {
@@ -550,13 +551,13 @@ pub struct IntAckMask {
 }
 
 /// FSM_OUTS1-8 (0x4C - 0x53)
-#[register(address = EmbReg::FsmOuts1, access_type = EmbedFuncState, init_fn = FsmOutsElement::new, generics = 2)]
+#[register(address = EmbReg::FsmOuts1, access_type = "Lsm6dsv16x<B, T, EmbBank>", init_fn = FsmOutsElement::new)]
 pub struct FsmOut(pub [FsmOutsElement; 8]);
 
 /// FSMx generic output register (R)
 ///
 /// Indicates positive and negative events detected on X, Y, Z axes and vector for FSMx.
-#[register(address = EmbReg::FsmOuts1, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::FsmOuts1, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct FsmOutsElement {
@@ -599,7 +600,7 @@ impl FsmOutsElement {
 /// SFLP_ODR (0x5E)
 ///
 /// Sensor fusion low-power output data rate configuration register (R/W)
-#[register(address = EmbReg::SflpOdr, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::SflpOdr, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct SflpOdr {
@@ -615,7 +616,7 @@ pub struct SflpOdr {
 /// FSM_ODR (0x5F)
 ///
 /// Finite state machine output data rate configuration register (R/W)
-#[register(address = EmbReg::FsmOdr, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::FsmOdr, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct FsmOdr {
@@ -631,7 +632,7 @@ pub struct FsmOdr {
 /// MLC_ODR (0x60)
 ///
 /// Machine learning core output data rate configuration register (R/W)
-#[register(address = EmbReg::MlcOdr, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::MlcOdr, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct MlcOdr {
@@ -647,13 +648,13 @@ pub struct MlcOdr {
 /// STEP_COUNTER_L (0x62 - 0x63)
 ///
 /// Step counter output register  (R)
-#[register(address = EmbReg::StepCounterL, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::StepCounterL, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 pub struct StepCounter(pub u16);
 
 /// EMB_FUNC_SRC (0x64)
 ///
 /// Embedded function source register (R/W)
-#[register(address = EmbReg::EmbFuncSrc, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::EmbFuncSrc, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct EmbFuncSrc {
@@ -681,7 +682,7 @@ pub struct EmbFuncSrc {
 /// EMB_FUNC_INIT_A (0x66)
 ///
 /// Embedded functions initialization register (R/W)
-#[register(address = EmbReg::EmbFuncInitA, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::EmbFuncInitA, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct EmbFuncInitA {
@@ -711,7 +712,7 @@ pub struct EmbFuncInitA {
 /// EMB_FUNC_INIT_B (0x67)
 ///
 /// Embedded functions initialization register (R/W)
-#[register(address = EmbReg::EmbFuncInitB, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::EmbFuncInitB, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct EmbFuncInitB {
@@ -733,7 +734,7 @@ pub struct EmbFuncInitB {
 /// MLC1_SRC - MLC4_SRC (0x70 - 0x73)
 ///
 /// Machine learning core source registers 1 - 4 (R)
-#[register(address = EmbReg::Mlc1Src, access_type = EmbedFuncState, generics = 2)]
+#[register(address = EmbReg::Mlc1Src, access_type="Lsm6dsv16x<B, T, EmbBank>")]
 pub struct MlcSrc(pub [u8; 4]);
 
 /// Finite state machine data rate

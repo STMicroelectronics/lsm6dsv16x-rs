@@ -1,10 +1,11 @@
-use crate::Error;
-use crate::Lsm6dsv16x;
+use super::super::{
+    BusOperation, DelayNs, EmbAdvFunctions, Error, Lsm6dsv16x, RegisterOperation, bisync,
+    register::MainBank,
+};
 use bitfield_struct::bitfield;
+
 use derive_more::TryFrom;
-use embedded_hal::delay::DelayNs;
 use st_mem_bank_macro::{MultiRegister, adv_register};
-use st_mems_bus::{BusOperation, EmbAdvFunctions};
 
 #[repr(u16)]
 #[derive(Clone, Copy, PartialEq)]
@@ -75,7 +76,7 @@ pub enum EmbAdv2Reg {
 /// SFLP_GAME_GBIASX_L - SFLP_GAME_GBIASZ_H (0x6E - 0x73)
 ///
 /// SFLP game algorithm (X, Y, Z)-axis gyroscope bias registers (R/W)
-#[adv_register(base_address = AdvPage::_0, address = EmbAdv0Reg::SflpGameGbiasxL, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_0, address = EmbAdv0Reg::SflpGameGbiasxL, access_type="Lsm6dsv16x<B, T, MainBank>")]
 pub struct SflpGameGbiasXYZ(pub [u16; 3]);
 
 /// FSM_START_ADD_L - FSM_START_ADD_H (0x7E - 0x7F)
@@ -83,19 +84,19 @@ pub struct SflpGameGbiasXYZ(pub [u16; 3]);
 /// FSM start address (R/W)
 ///
 /// First available address is 0x35C.
-#[adv_register(base_address = AdvPage::_0, address = EmbAdv0Reg::FsmStartAddL, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_0, address = EmbAdv0Reg::FsmStartAddL, access_type="Lsm6dsv16x<B, T, MainBank>")]
 pub struct FsmStartAdd(pub u16);
 
 /// FSM_EXT_SENSITIVITY_L - FSM_EXT_SENSITIVITY_H (0xBA - 0xBB)
 ///
 /// External sensor sensitivity value for the finite state machine (R/W)
-#[adv_register(base_address = AdvPage::_0, address = EmbAdv0Reg::FsmExtSensitivityL, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_0, address = EmbAdv0Reg::FsmExtSensitivityL, access_type="Lsm6dsv16x<B, T, MainBank>")]
 pub struct FsmExtSensitivity(pub u16);
 
 /// FSM_EXT_OFFX_L - FSM_EXT_OFFZ_H (0xC0 - 0xC5)
 ///
 /// External sensor (X, Y, Z)-axis offset (R/W)
-#[adv_register(base_address = AdvPage::_0, address = EmbAdv0Reg::FsmExtOffxL, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_0, address = EmbAdv0Reg::FsmExtOffxL, access_type="Lsm6dsv16x<B, T, MainBank>")]
 pub struct FsmExtOffXYZ(pub [u16; 3]);
 
 /// FSM_EXT_MATRIX (0xC6 - 0XD1)
@@ -106,13 +107,13 @@ pub struct FsmExtOffXYZ(pub [u16; 3]);
 /// Use `FsmExtSensMatrix to convert the data
 ///
 /// External sensor transformation matrix coefficient (R/W)
-#[adv_register(base_address = AdvPage::_0, address = EmbAdv0Reg::FsmExtMatrixXxL, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_0, address = EmbAdv0Reg::FsmExtMatrixXxL, access_type="Lsm6dsv16x<B, T, MainBank>")]
 pub struct FsmExtMatrix(pub [u8; 12]);
 
 /// EXT_CFG_A (0xD4)
 ///
 /// External sensor coordinates (Z and Y axes) rotation register (R/W)
-#[adv_register(base_address = AdvPage::_0, address = EmbAdv0Reg::ExtCfgA, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_0, address = EmbAdv0Reg::ExtCfgA, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct ExtCfgA {
@@ -131,7 +132,7 @@ pub struct ExtCfgA {
 /// EXT_CFG_B (0xD5)
 ///
 /// External sensor coordinates (X-axis) rotation register (R/W)
-#[adv_register(base_address = AdvPage::_0, address = EmbAdv0Reg::ExtCfgB, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_0, address = EmbAdv0Reg::ExtCfgB, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct ExtCfgB {
@@ -148,7 +149,7 @@ pub struct ExtCfgB {
 ///
 /// The long counter timeout value is an unsigned 16-bit integer. When the long counter reaches this value,
 /// the FSM generates an interrupt.
-#[adv_register(base_address = AdvPage::_1, address = EmbAdv1Reg::FsmLcTimeoutL, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_1, address = EmbAdv1Reg::FsmLcTimeoutL, access_type="Lsm6dsv16x<B, T, MainBank>")]
 pub struct FsmLcTimeout(pub u16);
 
 /// FSM_PROGRAMS (0x7C)
@@ -156,7 +157,7 @@ pub struct FsmLcTimeout(pub u16);
 /// FSM number of programs register (R/W)
 ///
 /// Number of FSM programs; must be less than or equal to 8.
-#[adv_register(base_address = AdvPage::_1, address = EmbAdv1Reg::FsmPrograms, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_1, address = EmbAdv1Reg::FsmPrograms, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct FsmPrograms {
@@ -168,7 +169,7 @@ pub struct FsmPrograms {
 /// PEDO_CMD_REG (0x83)
 ///
 /// Pedometer configuration register (R/W)
-#[adv_register(base_address = AdvPage::_1, address = EmbAdv1Reg::PedoCmdReg, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_1, address = EmbAdv1Reg::PedoCmdReg, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct PedoCmdReg {
@@ -189,7 +190,7 @@ pub struct PedoCmdReg {
 /// Pedometer debounce configuration register (R/W)
 ///
 /// Minimum number of steps to increment the step counter (debounce).
-#[adv_register(base_address = AdvPage::_1, address = EmbAdv1Reg::PedoDebStepsConf, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_1, address = EmbAdv1Reg::PedoDebStepsConf, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct PedoDebStepsConf {
@@ -202,19 +203,19 @@ pub struct PedoDebStepsConf {
 ///
 /// Time period register low byte for step detection on delta time (R/W)
 /// Time period 2 bytes (1LSB = 6.4 ms)
-#[adv_register(base_address = AdvPage::_1, address = EmbAdv1Reg::PedoScDeltatL, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_1, address = EmbAdv1Reg::PedoScDeltatL, access_type="Lsm6dsv16x<B, T, MainBank>")]
 pub struct PedoScDeltaT(pub u16);
 
 /// MLC_EXT_SENSITIVITY_L - MLC_EXT_SENSITIVITY_H (0xE8 - 0xE9)
 ///
 /// External sensor sensitivity value registers for the machine learning core (R/W)
-#[adv_register(base_address = AdvPage::_1, address = EmbAdv1Reg::MlcExtSensitivityL, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_1, address = EmbAdv1Reg::MlcExtSensitivityL, access_type="Lsm6dsv16x<B, T, MainBank>")]
 pub struct MlcExtSensitivity(pub u16);
 
 /// EXT_FORMAT (0x00)
 ///
 /// AH / Qvar / external sensor data format register (R/W)
-#[adv_register(base_address = AdvPage::_2, address = EmbAdv2Reg::ExtFormat, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_2, address = EmbAdv2Reg::ExtFormat, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct ExtFormat {
@@ -230,7 +231,7 @@ pub struct ExtFormat {
 /// EXT_3BYTE_SENSITIVITY_L (0x02)
 ///
 /// External sensor (3-byte output data) sensitivity value register low byte (R/W)
-#[adv_register(base_address = AdvPage::_2, address = EmbAdv2Reg::Ext3byteSensitivityL, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_2, address = EmbAdv2Reg::Ext3byteSensitivityL, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Ext3byteSensitivityL {
@@ -242,7 +243,7 @@ pub struct Ext3byteSensitivityL {
 /// EXT_3BYTE_SENSITIVITY_H (0x03)
 ///
 /// External sensor (3-byte output data) sensitivity value register high byte (R/W)
-#[adv_register(base_address = AdvPage::_2, address = EmbAdv2Reg::Ext3byteSensitivityH, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_2, address = EmbAdv2Reg::Ext3byteSensitivityH, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Ext3byteSensitivityH {
@@ -254,7 +255,7 @@ pub struct Ext3byteSensitivityH {
 /// EXT_3BYTE_OFFSET_XL (0x06)
 ///
 /// External sensor (3-byte output data) offset value register low byte (R/W)
-#[adv_register(base_address = AdvPage::_2, address = EmbAdv2Reg::Ext3byteOffsetXl, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_2, address = EmbAdv2Reg::Ext3byteOffsetXl, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Ext3byteOffsetXl {
@@ -266,7 +267,7 @@ pub struct Ext3byteOffsetXl {
 /// EXT_3BYTE_OFFSET_L (0x07)
 ///
 /// External sensor (3-byte output data) offset value register mid byte (R/W)
-#[adv_register(base_address = AdvPage::_2, address = EmbAdv2Reg::Ext3byteOffsetL, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_2, address = EmbAdv2Reg::Ext3byteOffsetL, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Ext3byteOffsetL {
@@ -278,7 +279,7 @@ pub struct Ext3byteOffsetL {
 /// EXT_3BYTE_OFFSET_H (0x08)
 ///
 /// External sensor (3-byte output data) offset value register high byte (R/W)
-#[adv_register(base_address = AdvPage::_2, address = EmbAdv2Reg::Ext3byteOffsetH, access_type = Lsm6dsv16x, generics = 2)]
+#[adv_register(base_address = AdvPage::_2, address = EmbAdv2Reg::Ext3byteOffsetH, access_type="Lsm6dsv16x<B, T, MainBank>")]
 #[cfg_attr(feature = "bit_order_msb", bitfield(u8, order = Msb))]
 #[cfg_attr(not(feature = "bit_order_msb"), bitfield(u8, order = Lsb))]
 pub struct Ext3byteOffsetH {

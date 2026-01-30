@@ -1136,10 +1136,9 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     }
     /// Get the actual Mask status bit reset
     pub async fn int_ack_mask_get(&mut self) -> Result<u8, Error<B::Error>> {
-        self.operate_over_embed(async |state| {
-            IntAckMask::read(state).await.map(|reg| reg.into_bits())
-        })
-        .await
+        self.operate_over_embed(IntAckMask::read)
+            .await
+            .map(|reg| reg.into_bits())
     }
     /// Get the Temperature raw data
     pub async fn temperature_raw_get(&mut self) -> Result<i16, Error<B::Error>> {
@@ -1632,11 +1631,9 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     }
     /// Get the configuration (enables/disables) batching in FIFO buffer of machine learning core results.
     pub async fn fifo_mlc_batch_get(&mut self) -> Result<u8, Error<B::Error>> {
-        self.operate_over_embed(async |state| {
-            let emb_func_fifo_en_a = EmbFuncFifoEnA::read(state).await?;
-            Ok(emb_func_fifo_en_a.mlc_fifo_en())
-        })
-        .await
+        self.operate_over_embed(EmbFuncFifoEnA::read)
+            .await
+            .map(|reg| reg.mlc_fifo_en())
     }
     /// Enables batching in FIFO buffer of machine learning core filters and features.
     pub async fn fifo_mlc_filt_batch_set(&mut self, val: u8) -> Result<(), Error<B::Error>> {
@@ -2097,13 +2094,13 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     ///
     /// Long counter value is an unsigned integer value (16-bit format).
     pub async fn fsm_long_cnt_get(&mut self) -> Result<u16, Error<B::Error>> {
-        self.operate_over_embed(async |state| FsmLongCounter::read(state).await.map(|reg| reg.0))
+        self.operate_over_embed(FsmLongCounter::read)
             .await
+            .map(|reg| reg.0)
     }
     /// Get the FSM output results.
     pub async fn fsm_out_get(&mut self) -> Result<[FsmOutsElement; 8], Error<B::Error>> {
-        self.operate_over_embed(async |state| FsmOut::read(state).await.map(|reg| reg.0))
-            .await
+        self.operate_over_embed(FsmOut::read).await.map(|reg| reg.0)
     }
     /// Set the Finite State Machine Output Data Rate (ODR).
     pub async fn fsm_data_rate_set(&mut self, val: FsmDataRate) -> Result<(), Error<B::Error>> {
@@ -2117,14 +2114,9 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     /// Get the finite State Machine Output Data Rate (ODR) configuration.
     pub async fn fsm_data_rate_get(&mut self) -> Result<FsmDataRate, Error<B::Error>> {
         // Set the memory bank to EmbedFuncMemBank
-        self.operate_over_embed(async |state| {
-            // Read the FSM ODR register
-            let fsm_odr = FsmOdr::read(state).await?;
-            // Determine the FSM data rate
-            let val = FsmDataRate::try_from(fsm_odr.fsm_odr()).unwrap_or_default();
-            Ok(val)
-        })
-        .await
+        self.operate_over_embed(FsmOdr::read)
+            .await
+            .map(|reg| FsmDataRate::try_from(reg.fsm_odr()).unwrap_or_default())
     }
     /// Set SFLP GBIAS value for x/y/z axis.
     ///
@@ -2527,20 +2519,15 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     }
     /// Get the Machine Learning Core Output Data Rate (ODR).
     pub async fn mlc_data_rate_get(&mut self) -> Result<MlcDataRate, Error<B::Error>> {
-        self.operate_over_embed(async |state| {
-            let mlc_odr = MlcOdr::read(state).await?;
-            let val = MlcDataRate::try_from(mlc_odr.mlc_odr()).unwrap_or_default();
-            Ok(val)
-        })
-        .await
+        self.operate_over_embed(MlcOdr::read)
+            .await
+            .map(|reg| MlcDataRate::try_from(reg.mlc_odr()).unwrap_or_default())
     }
     /// Get the output value of all MLC decision trees.
     pub async fn mlc_out_get(&mut self) -> Result<MlcOut, Error<B::Error>> {
-        self.operate_over_embed(async |state| {
-            let mlc_outs = MlcSrc::read(state).await?.0;
-            Ok(MlcOut::from_le_bytes(mlc_outs))
-        })
-        .await
+        self.operate_over_embed(MlcSrc::read)
+            .await
+            .map(|reg| MlcOut::from_le_bytes(reg.0))
     }
     /// Set the External sensor sensitivity value register for the Machine Learning Core.
     ///
@@ -2888,13 +2875,9 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     }
     /// Get the number of external sensors to be read by the sensor hub.
     pub async fn sh_slave_connected_get(&mut self) -> Result<ShSlaveConnected, Error<B::Error>> {
-        self.operate_over_sensorhub(async |state| {
-            let master_config = MasterConfig::read(state).await?;
-            let result =
-                ShSlaveConnected::try_from(master_config.aux_sens_on()).unwrap_or_default();
-            Ok(result)
-        })
-        .await
+        self.operate_over_sensorhub(MasterConfig::read)
+            .await
+            .map(|reg| ShSlaveConnected::try_from(reg.aux_sens_on()).unwrap_or_default())
     }
     /// Enable/Disable Sensor hub I2C master configuration.
     pub async fn sh_master_set(&mut self, val: u8) -> Result<(), Error<B::Error>> {
@@ -2907,12 +2890,9 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     }
     /// Get Sensor hub I2C master configuration (enable/disable).
     pub async fn sh_master_get(&mut self) -> Result<u8, Error<B::Error>> {
-        self.operate_over_sensorhub(async |state| {
-            let master_config = MasterConfig::read(state).await?;
-            let val: u8 = master_config.master_on();
-            Ok(val)
-        })
-        .await
+        self.operate_over_sensorhub(MasterConfig::read)
+            .await
+            .map(|reg| reg.master_on())
     }
     /// Enable/Disable I2C interface pass-through.
     pub async fn sh_pass_through_set(&mut self, val: u8) -> Result<(), Error<B::Error>> {
@@ -2927,12 +2907,9 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     }
     /// Get I2C interface pass-through configuration (enable/disable).
     pub async fn sh_pass_through_get(&mut self) -> Result<u8, Error<B::Error>> {
-        self.operate_over_sensorhub(async |state| {
-            let master_config = MasterConfig::read(state).await?;
-            let val: u8 = master_config.pass_through_mode();
-            Ok(val)
-        })
-        .await
+        self.operate_over_sensorhub(MasterConfig::read)
+            .await
+            .map(|reg| reg.pass_through_mode())
     }
     /// Set Sensor hub trigger signal configuration.
     pub async fn sh_syncro_mode_set(&mut self, val: ShSyncroMode) -> Result<(), Error<B::Error>> {
@@ -2945,12 +2922,9 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     }
     /// Get Sensor hub trigger signal configuration.
     pub async fn sh_syncro_mode_get(&mut self) -> Result<ShSyncroMode, Error<B::Error>> {
-        self.operate_over_sensorhub(async |state| {
-            let master_config = MasterConfig::read(state).await?;
-            let val = ShSyncroMode::try_from(master_config.start_config()).unwrap_or_default();
-            Ok(val)
-        })
-        .await
+        self.operate_over_sensorhub(MasterConfig::read)
+            .await
+            .map(|reg| ShSyncroMode::try_from(reg.start_config()).unwrap_or_default())
     }
     /// Set Slave 0 write operation mode.
     ///
@@ -2987,11 +2961,9 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     ///
     /// Must be set to '1' and then set it to '0'.
     pub async fn sh_reset_get(&mut self) -> Result<u8, Error<B::Error>> {
-        self.operate_over_sensorhub(async |state| {
-            let master_config = MasterConfig::read(state).await?;
-            Ok(master_config.rst_master_regs())
-        })
-        .await
+        self.operate_over_sensorhub(MasterConfig::read)
+            .await
+            .map(|reg| reg.rst_master_regs())
     }
     /// Configure slave 0 to perform a write.
     pub async fn sh_cfg_write(&mut self, val: ShCfgWrite) -> Result<(), Error<B::Error>> {
@@ -3021,12 +2993,9 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     }
     /// Get the rate at which the controller communicates.
     pub async fn sh_data_rate_get(&mut self) -> Result<ShDataRate, Error<B::Error>> {
-        self.operate_over_sensorhub(async |state| {
-            let slv0_config = Slv0Config::read(state).await?;
-            let rate = ShDataRate::try_from(slv0_config.shub_odr()).unwrap_or_default();
-            Ok(rate)
-        })
-        .await
+        self.operate_over_sensorhub(Slv0Config::read)
+            .await
+            .map(|reg| ShDataRate::try_from(reg.shub_odr()).unwrap_or_default())
     }
     /// Configure slave idx for performing a read.
     ///
@@ -3183,9 +3152,7 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     }
     /// Get Step counter mode
     pub async fn stpcnt_mode_get(&mut self) -> Result<StpcntMode, Error<B::Error>> {
-        let emb_func_en_a = self
-            .operate_over_embed(EmbFuncEnA::read)
-            .await?;
+        let emb_func_en_a = self.operate_over_embed(EmbFuncEnA::read).await?;
         let pedo_cmd_reg = PedoCmdReg::read(self).await?;
 
         let val = StpcntMode {
@@ -3197,8 +3164,9 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     }
     /// Get Step counter output: number of detected steps.
     pub async fn stpcnt_steps_get(&mut self) -> Result<u16, Error<B::Error>> {
-        self.operate_over_embed(async |state| StepCounter::read(state).await.map(|reg| reg.0))
+        self.operate_over_embed(StepCounter::read)
             .await
+            .map(|reg| reg.0)
     }
     /// Reset step counter.
     ///
@@ -3213,10 +3181,9 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     }
     /// Get reset step counter.
     pub async fn stpcnt_rst_step_get(&mut self) -> Result<u8, Error<B::Error>> {
-        self.operate_over_embed(async |state| {
-            EmbFuncSrc::read(state).await.map(|reg| reg.pedo_rst_step())
-        })
-        .await
+        self.operate_over_embed(EmbFuncSrc::read)
+            .await
+            .map(|reg| reg.pedo_rst_step())
     }
     /// Set Pedometer debounce number.
     pub async fn stpcnt_debounce_set(&mut self, val: u8) -> Result<(), Error<B::Error>> {
@@ -3250,11 +3217,9 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     }
     /// Get the configuration (enable/disable) for SFLP Game Rotation Vector (6x).
     pub async fn sflp_game_rotation_get(&mut self) -> Result<u8, Error<B::Error>> {
-        self.operate_over_embed(async |state| {
-            let emb_func_en_a = EmbFuncEnA::read(state).await?;
-            Ok(emb_func_en_a.sflp_game_en())
-        })
-        .await
+        self.operate_over_embed(EmbFuncEnA::read)
+            .await
+            .map(|reg| reg.sflp_game_en())
     }
     /// Set SFLP Data Rate (ODR).
     pub async fn sflp_data_rate_set(&mut self, val: SflpDataRate) -> Result<(), Error<B::Error>> {
@@ -3267,12 +3232,9 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     }
     /// Get SFLP Data Rate (ODR).
     pub async fn sflp_data_rate_get(&mut self) -> Result<SflpDataRate, Error<B::Error>> {
-        self.operate_over_embed(async |state| {
-            let sflp = SflpOdr::read(state).await?;
-            let odr = SflpDataRate::try_from(sflp.sflp_game_odr()).unwrap_or_default();
-            Ok(odr)
-        })
-        .await
+        self.operate_over_embed(SflpOdr::read)
+            .await
+            .map(|reg| SflpDataRate::try_from(reg.sflp_game_odr()).unwrap_or_default())
     }
     /// Enable axis for Tap - Double Tap detection.
     pub async fn tap_detection_set(&mut self, val: TapDetection) -> Result<(), Error<B::Error>> {
@@ -3412,13 +3374,9 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     }
     /// Get Tilt mode.
     pub async fn tilt_mode_get(&mut self) -> Result<u8, Error<B::Error>> {
-        // Switch to the embedded function memory bank
-        self.operate_over_embed(async |state| {
-            // Read the register values
-            EmbFuncEnA::read(state).await.map(|reg| reg.tilt_en())
-            // Switch back to the main memory bank
-        })
-        .await
+        self.operate_over_embed(EmbFuncEnA::read)
+            .await
+            .map(|reg| reg.tilt_en())
     }
     /// Get Timestamp raw data
     pub async fn timestamp_raw_get(&mut self) -> Result<u32, Error<B::Error>> {
@@ -3782,7 +3740,7 @@ pub fn from_half_to_single_precision(h: u16) -> u32 {
 pub struct Lsm6dsv16xMaster<B, T>
 where
     B: BusOperation,
-    T: DelayNs
+    T: DelayNs,
 {
     pub sensor: RefCell<Lsm6dsv16x<B, T, MainBank>>,
 }
@@ -3825,7 +3783,7 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16xMaster<B, T> {
 pub struct Lsm6dsv16xPassthrough<'a, B, T>
 where
     B: BusOperation,
-    T: DelayNs
+    T: DelayNs,
 {
     sensor: &'a RefCell<Lsm6dsv16x<B, T, MainBank>>,
     slave_address: SevenBitAddress,
@@ -3938,7 +3896,7 @@ where
 pub struct Lsm6dsv16xPassthrough<'a, B, T>
 where
     B: BusOperation,
-    T: DelayNs
+    T: DelayNs,
 {
     sensor: &'a mut Lsm6dsv16x<B, T, MainBank>,
     slave_address: SevenBitAddress,
@@ -3949,15 +3907,15 @@ where
 impl<'a, B, T> Lsm6dsv16xPassthrough<'a, B, T>
 where
     B: BusOperation,
-    T: DelayNs
+    T: DelayNs,
 {
     pub fn new_from_sensor(
         sensor: &'a mut Lsm6dsv16x<B, T, MainBank>,
-        slave_address: SevenBitAddress
+        slave_address: SevenBitAddress,
     ) -> Self {
         Lsm6dsv16xPassthrough {
             sensor,
-            slave_address
+            slave_address,
         }
     }
 }
@@ -4059,7 +4017,6 @@ where
         master.sh_read_data_raw_get(rbuf).await
     }
 }
-
 
 #[derive(Clone, Copy, Default)]
 #[bisync]

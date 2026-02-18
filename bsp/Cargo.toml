@@ -1,0 +1,108 @@
+[package]
+name    = "lsm6dsv16x-application"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[features]
+# ── Boards ── each one pulls in its HAL + implies async or blocking
+nucleo-f401re         = [
+    "dep:stm32f4xx-hal",
+    "dep:cortex-m-rt",
+    "dep:cortex-m",
+    "generate-memory-x",
+    "memory-x-512-96",
+    "stm32f4xx-hal/stm32f401",
+    "blocking"
+]
+nucleo-f401re-embassy = [
+    "dep:embassy-stm32",
+    "dep:embassy-executor",
+    "dep:embassy-time",
+    "dep:embassy-sync",
+    "dep:cortex-m-rt",
+    "dep:cortex-m",
+    "embassy-stm32/stm32f401re",
+    "async"
+]
+
+# ── Mode ── implied by the board above, never set manually
+async    = ["lsm6dsv16x-rs/async",   "dep:embedded-hal-async", "dep:embedded-io-async"]
+blocking = ["lsm6dsv16x-rs/blocking", "dep:embedded-hal", "maybe-async/is_sync"]
+interrupt = []
+# Features to create custom memory.x file
+generate-memory-x = []
+memory-x-512-96 = []
+# Feature to enable json config conversion
+reg-config = ["st-mems-reg-config-conv"]
+
+# ── Example definition (select one) ──
+read_polling = []
+read_irq = ["interrupt"]
+compressed_fifo = ["dep:st-fifo-tool"]
+fifo_irq = ["interrupt"]
+fifo_stepcnt = ["interrupt"]
+fifo = []
+free_fall = ["interrupt"]
+fsm_fourd = ["interrupt", "reg-config"]
+fsm_glance = ["interrupt", "reg-config"]
+mlc_gym = ["interrupt", "reg-config"]
+pedometer = ["interrupt"]
+qvar = []
+self_test = ["dep:libm"]
+sensor_fusion = ["dep:libm"]
+sensor_hub = ["dep:lis2mdl-rs", "dep:lps22df-rs", "lsm6dsv16x-rs/passthrough", "interrupt"]
+sig_mot = ["interrupt"]
+single_double_tap = ["interrupt"]
+sixd_position = ["interrupt"]
+tilt = ["interrupt"]
+wakeup = ["interrupt"]
+
+[dependencies]
+st-mems-bus = "2.0.0"
+lsm6dsv16x-rs      = { path = "..", default-features = false }
+libm = { version = "0.2.15", optional = true }
+
+embedded-hal       = { version = "1.0", optional = true }
+embedded-hal-async = { version = "1.0", optional = true }
+
+stm32f4xx-hal    = { version = "0.21", optional = true }
+cortex-m         = { version = "0.7",  optional = true, features = ["critical-section-single-core"] }
+cortex-m-rt      = { version = "0.7", optional = true }
+
+embassy-stm32    = { version = "0.5",  optional = true, features = ["time-driver-any", "exti", "memory-x"] }
+#embassy-rp       = { version = "0.9",  optional = true, features = ["time-driver"] }
+embassy-executor = { version = "0.9.1", optional = true, features = ["arch-cortex-m", "executor-thread", "defmt"] }
+embassy-time     = { version = "0.5",  optional = true, features = ["defmt", "defmt-timestamp-uptime", "tick-hz-32_768"] }
+embassy-sync = { version = "0.7.2", optional = true }
+embassy-futures = { version = "0.1.2", optional = true }
+
+defmt = "1.0.1"
+defmt-rtt = "1.1.0"
+embedded-io = "0.7.1"
+embedded-io-async = { version = "0.7.0", optional = true}
+panic-probe = { version = "1.0.0", features = ["print-defmt", "defmt"] }
+maybe-async = "0.2.10"
+st-fifo-tool = { version = "1.0.0", optional = true }
+st-mems-reg-config-conv = { version = "1.0.2", optional = true }
+
+lis2mdl-rs = { version = "2.0.0", optional = true, features = ["async", "blocking"] }
+lps22df-rs = { version = "2.0.0", optional = true, features = ["async", "blocking"] }
+
+[build-dependencies]
+st-mems-reg-config-conv = { version = "1.0.2", features = ["std"] }
+
+# Profile optimizations
+[profile.release]
+codegen-units = 1
+debug = 2
+debug-assertions = false
+incremental = false
+lto = true
+opt-level = 3
+overflow-checks = false
+
+[profile.dev]
+debug = true
+lto = false
+opt-level = 1

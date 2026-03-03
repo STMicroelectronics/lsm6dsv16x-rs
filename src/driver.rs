@@ -3,15 +3,6 @@ use super::{
     SensorOperation, SevenBitAddress, SpiDevice, bisync, i2c, prelude::*, register::BankState,
     register::*, spi,
 };
-#[cfg(feature = "passthrough")]
-use super::{only_async, only_sync};
-
-#[cfg(feature = "passthrough")]
-#[only_sync]
-use core::cell::RefCell;
-#[cfg(feature = "passthrough")]
-#[only_sync]
-use core::cell::RefMut;
 
 use core::fmt::Debug;
 use core::marker::PhantomData;
@@ -3736,163 +3727,10 @@ pub fn from_half_to_single_precision(h: u16) -> u32 {
 }
 
 #[cfg(feature = "passthrough")]
-#[only_sync]
-pub struct Lsm6dsv16xMaster<B, T>
-where
-    B: BusOperation,
-    T: DelayNs,
-{
-    pub sensor: RefCell<Lsm6dsv16x<B, T, MainBank>>,
-}
-
-#[cfg(feature = "passthrough")]
-#[only_sync]
-impl<B: BusOperation, T: DelayNs> Lsm6dsv16xMaster<B, T> {
-    pub fn from_bus(bus: B, tim: T) -> Self {
-        Self {
-            sensor: RefCell::new(Lsm6dsv16x::from_bus(bus, tim)),
-        }
-    }
-
-    pub fn borrow_mut(&self) -> RefMut<'_, Lsm6dsv16x<B, T, MainBank>> {
-        self.sensor.borrow_mut()
-    }
-
-    /// Generates a wrapper for the sensor to enable its use as a passthrough
-    /// from another sensor.
-    ///
-    /// The Sensor Hub may require this setup to redirect writes from the
-    /// bus to the sensor that executes them as a passthrough.
-    pub fn as_passthrough<'a>(
-        &'a self,
-        address: SevenBitAddress,
-    ) -> Lsm6dsv16xPassthrough<'a, B, T> {
-        Lsm6dsv16xPassthrough {
-            sensor: &self.sensor,
-            slave_address: address,
-        }
-    }
-}
-
-#[cfg(feature = "passthrough")]
-/// Struct to handle Sensor to do the passthrough write and read for the
-/// slave sensor.
+/// Lsm6dsv16xPassthrough
 ///
-/// Do not usit as it, call the as_passthrough function on the Lsm6dsv16x instance
-#[only_sync]
-pub struct Lsm6dsv16xPassthrough<'a, B, T>
-where
-    B: BusOperation,
-    T: DelayNs,
-{
-    sensor: &'a RefCell<Lsm6dsv16x<B, T, MainBank>>,
-    slave_address: SevenBitAddress,
-}
-
-#[cfg(feature = "passthrough")]
-// LSM6DSV16X acts like a bus when used for the sensor hub.
-#[only_sync]
-impl<B, T> BusOperation for Lsm6dsv16xPassthrough<'_, B, T>
-where
-    B: BusOperation,
-    T: DelayNs,
-{
-    type Error = Error<B::Error>;
-
-    fn read_bytes(&mut self, _rbuf: &mut [u8]) -> Result<(), Self::Error> {
-        Err(Error::UnexpectedValue)
-    }
-
-    fn write_bytes(&mut self, wbuf: &[u8]) -> Result<(), Self::Error> {
-        let mut master = self.sensor.borrow_mut();
-        for i in 1_u8..(wbuf.len() as u8) {
-            // Configure Sensor Hub to read data
-            let sh_cfg_write = ShCfgWrite {
-                slv0_add: self.slave_address,
-                slv0_subadd: wbuf[0] + i - 1,
-                slv0_data: wbuf[i as usize],
-            };
-            master.sh_cfg_write(sh_cfg_write)?;
-
-            // Disable accelerometer
-            master.xl_data_rate_set(Odr::Off)?;
-            // Enable I2C Master
-            master.sh_master_set(1)?;
-            // Enable accelerometer to trigger Sensor Hub operation.
-            master.xl_data_rate_set(Odr::_120hz)?;
-            // Wait Sensor Hub operation flag set.
-            master.acceleration_raw_get()?; // dummy read
-
-            let mut drdy = 0;
-            while drdy == 0 {
-                master.tim.delay_ms(20);
-                drdy = master.flag_data_ready_get()?.drdy_xl;
-            }
-
-            let mut end_op = 0;
-            while end_op == 0 {
-                master.tim.delay_ms(20);
-                end_op = master.sh_status_get()?.sens_hub_endop();
-            }
-
-            // Disable I2C master and XL (triger).
-            master.sh_master_set(0)?;
-            master.xl_data_rate_set(Odr::Off)?;
-        }
-
-        Ok(())
-    }
-
-    fn write_byte_read_bytes(
-        &mut self,
-        wbuf: &[u8; 1],
-        rbuf: &mut [u8],
-    ) -> Result<(), Self::Error> {
-        let mut master = self.sensor.borrow_mut();
-        // Disable accelerometer
-        master.xl_data_rate_set(Odr::Off)?;
-        // Configure Sensor Hub to read
-        let sh_cfg_read = ShCfgRead {
-            slv_add: self.slave_address,
-            slv_subadd: wbuf[0],
-            slv_len: rbuf.len() as u8,
-        };
-        master.sh_slv_cfg_read(0, &sh_cfg_read)?; // dummy read
-        master.sh_slave_connected_set(ShSlaveConnected::_01)?;
-        // Enable I2C Master
-        master.sh_master_set(1)?;
-        // Enable accelerometer to trigger Sensor Hub operation.
-        master.xl_data_rate_set(Odr::_120hz)?;
-        // Wait Sensor Hub operation flag set
-        master.acceleration_raw_get()?; // dummy read
-
-        let mut drdy = 0;
-        while drdy == 0 {
-            master.tim.delay_ms(20);
-            drdy = master.flag_data_ready_get()?.drdy_xl;
-        }
-
-        let mut end_op = 0;
-        while end_op == 0 {
-            //master.tim.delay_ms(20);
-            end_op = master.sh_status_get()?.sens_hub_endop();
-        }
-
-        // Disable I2C master and XL(trigger)
-        master.sh_master_set(0)?;
-        master.xl_data_rate_set(Odr::Off)?;
-
-        // Read SensorHub registers
-        master.sh_read_data_raw_get(rbuf)
-    }
-}
-
-#[cfg(feature = "passthrough")]
-/// Struct to handle Sensor to do the passthrough write and read for the
-/// slave sensor.
-///
-/// Do not usit as it, call the as_passthrough function on the Lsm6dsv16x instance
-#[only_async]
+/// Encapsulate the sensor as a bus that could be used inside another sensor
+/// to provide passthrough capability
 pub struct Lsm6dsv16xPassthrough<'a, B, T>
 where
     B: BusOperation,
@@ -3903,7 +3741,6 @@ where
 }
 
 #[cfg(feature = "passthrough")]
-#[only_async]
 impl<'a, B, T> Lsm6dsv16xPassthrough<'a, B, T>
 where
     B: BusOperation,
@@ -3922,7 +3759,7 @@ where
 
 #[cfg(feature = "passthrough")]
 // LSM6DSV16X acts like a bus when used for the sensor hub.
-#[only_async]
+#[bisync]
 impl<B, T> BusOperation for Lsm6dsv16xPassthrough<'_, B, T>
 where
     B: BusOperation,

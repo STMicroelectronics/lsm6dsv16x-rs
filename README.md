@@ -96,7 +96,7 @@ Currently, the supported board and frameworks are:
 - **nucleo-f401re** — built on the stm32-rs framework, using a blocking implementation.
 - **nucleo-f401re-embassy** — uses the embassy asynchronous framework..
 
-More details and instructions are available in [bsp/README.md](bsp/README.md).
+More details and instructions are available in [bsp/README.md](https://github.com/STMicroelectronics/lsm6dsv16x-rs/blob/main/bsp/README.md).
 
 ### Configure
 

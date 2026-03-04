@@ -1,18 +1,15 @@
-# ┌─────────────────────────────────────────────────────────────────┐
-# │  Uncomment exactly ONE board and ONE example, then:             │
-# │    cargo run  (from the examples/ directory)                    │
-# └─────────────────────────────────────────────────────────────────┘
+# Examples can be run using aliases:
+#
+# Example: cargo nucleo-f401re-embassy --features <example_name>
+#
+# Configuration is required for unsupported boards.
 
 [build]
 # -- TARGET + RUNNER (must match chosen board) --------------------------------
 target = "thumbv7em-none-eabihf"
-#target = "thumbv8m.main-none-eabihf"
 
 [target.thumbv7em-none-eabihf]
 runner = "probe-rs run --chip STM32F401RETx --connect-under-reset"
-
-[target.thumbv8m.main-none-eabihf]
-runner = "dfu-util "
 
 # -- BOARD (uncomment one or use alias) --------------------------------------
 # features = "nucleo-f401re-embassy"
@@ -24,13 +21,8 @@ runner = "dfu-util "
 # -- CONVENIENCE ALIASES --------------------------------------------------
 # Usage: cargo nucleo-f401re-embassy  (runs whichever example is selected above)
 [alias]
-mki109d               = "build --features mki109d-embassy"
-mki109d-flash         = "run-script mki109d"
-nucleo-f401re-embassy = "run --features nucleo-f401re-embassy"
-nucleo-f401re         = "run --features nucleo-f401re"
-
-[package.metadata.cargo-script]
-mki109d = { path = "scripts/flash-mki109d.sh" }
+nucleo-f401re-embassy = "run --target thumbv7em-none-eabihf --features nucleo-f401re-embassy"
+nucleo-f401re         = "run --target thumbv7em-none-eabihf --features nucleo-f401re"
 
 [env]
 DEFMT_LOG = "info"

@@ -26,10 +26,23 @@ st-mem-bank-macro = "2.0.0"
 bisync = "0.3.0"
 embedded-hal-async = "1.0.0"
 
-# By default the bit order is assumed as Least Significant Bit.
+# Features
+# --------
+# - By default the async API is enabled via the `async` feature.
+#   Enable `blocking` to use the blocking variant instead.
+#
+# - Bit order defaults to Least Significant Bit first.
+#   Enable `bit_order_msb` to use Most Significant Bit first.
 [features]
 default = ["async"]
+# Expose the asynchronous driver module.
 async = []
+# Expose the blocking driver module.
 blocking = []
+# Expose passthrough mode used for SensorHub.
 passthrough = []
+# Use Most Significant Bit first instead of the default LSB-first ordering.
 bit_order_msb = []
+
+[package.metadata.docs.rs]
+all-features = true

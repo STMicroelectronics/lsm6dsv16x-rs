@@ -2132,9 +2132,12 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
         };
 
         // compute gbias as half precision float in order to be put in embedded advanced feature register
-        gbias_hf[0] = from_single_precision_to_half(val.gbias_x * (core::f32::consts::PI / 180.0) / k);
-        gbias_hf[1] = from_single_precision_to_half(val.gbias_y * (core::f32::consts::PI / 180.0) / k);
-        gbias_hf[2] = from_single_precision_to_half(val.gbias_z * (core::f32::consts::PI / 180.0) / k);
+        gbias_hf[0] =
+            from_single_precision_to_half(val.gbias_x * (core::f32::consts::PI / 180.0) / k);
+        gbias_hf[1] =
+            from_single_precision_to_half(val.gbias_y * (core::f32::consts::PI / 180.0) / k);
+        gbias_hf[2] =
+            from_single_precision_to_half(val.gbias_z * (core::f32::consts::PI / 180.0) / k);
 
         // Save sensor configuration and set high-performance mode (if the sensor is in the power-down
         // mode, turn it on)

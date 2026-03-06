@@ -1,0 +1,36 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "probe-rs-debug",
+            "request": "launch",
+            "name": "Probe-RS: Flash & Run",
+            "cwd": "${workspaceFolder}",
+            "chip": "STM32F401RETx",
+            "connectUnderReset": true,
+            "flashingConfig": {
+                "flashingEnabled": true,
+                "resetAfterFlashing": true,
+                "haltAfterReset": false
+            },
+            "coreConfigs": [
+                {
+                    "coreIndex": 0,
+                    "programBinary": "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/lsm6dsv16x-application",
+                    "rttEnabled": true,
+                    "rttChannelFormats": [
+                        {
+                            "channelNumber": 0,
+                            "dataFormat": "Defmt",
+                            "showTimestamps": true
+                        }
+                    ]
+                }
+            ],
+            "env": {
+                "DEFMT_LOG": "info"
+            },
+            "preLaunchTask": "Cargo Build (Interactive)"
+        }
+    ]
+}

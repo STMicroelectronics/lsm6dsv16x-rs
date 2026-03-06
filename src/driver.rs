@@ -2132,9 +2132,9 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
         };
 
         // compute gbias as half precision float in order to be put in embedded advanced feature register
-        gbias_hf[0] = self.npy_float_to_half(val.gbias_x * (core::f32::consts::PI / 180.0) / k);
-        gbias_hf[1] = self.npy_float_to_half(val.gbias_y * (core::f32::consts::PI / 180.0) / k);
-        gbias_hf[2] = self.npy_float_to_half(val.gbias_z * (core::f32::consts::PI / 180.0) / k);
+        gbias_hf[0] = from_single_precision_to_half(val.gbias_x * (core::f32::consts::PI / 180.0) / k);
+        gbias_hf[1] = from_single_precision_to_half(val.gbias_y * (core::f32::consts::PI / 180.0) / k);
+        gbias_hf[2] = from_single_precision_to_half(val.gbias_z * (core::f32::consts::PI / 180.0) / k);
 
         // Save sensor configuration and set high-performance mode (if the sensor is in the power-down
         // mode, turn it on)
@@ -3510,107 +3510,6 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
 
         Ok(val)
     }
-    // pub async fn npy_floatbits_to_halfbits(&mut self, f: u32) -> u16 {
-    //     let f_exp: u32;
-    //     let f_sig: u32;
-    //     let h_sgn: u16;
-    //     let h_exp: u16;
-    //     let h_sig: u16;
-
-    //     h_sgn = ((f & 0x80000000) >> 16) as u16;
-    //     f_exp = f & 0x7f800000;
-
-    //     // Exponent overflow/NaN converts to signed inf/NaN
-    //     if f_exp >= 0x47800000 {
-    //         if f_exp == 0x7f800000 {
-    //             // Inf or NaN
-    //             f_sig = f & 0x007fffff;
-    //             if f_sig != 0 {
-    //                 // NaN - propagate the flag in the significand...
-    //                 let mut ret = (0x7c00 + (f_sig >> 13)) as u16;
-    //                 // ...but make sure it stays a NaN
-    //                 if ret == 0x7c00 {
-    //                     ret += 1;
-    //                 }
-    //                 return h_sgn + ret;
-    //             } else {
-    //                 // signed inf
-    //                 return h_sgn + 0x7c00;
-    //             }
-    //         } else {
-    //             // overflow to signed inf
-    //             if NPY_HALF_GENERATE_OVERFLOW {
-    //                 // npy_set_floatstatus_overflow(); // Implement this if needed
-    //             }
-    //             return h_sgn + 0x7c00;
-    //         }
-    //     }
-
-    //     // Exponent underflow converts to a subnormal half or signed zero
-    //     if f_exp <= 0x38000000 {
-    //         // Signed zeros, subnormal floats, and floats with small exponents all convert to signed zero half-floats.
-    //         if f_exp < 0x33000000 {
-    //             if NPY_HALF_GENERATE_UNDERFLOW {
-    //                 // If f != 0, it underflowed to 0
-    //                 if (f & 0x7fffffff) != 0 {
-    //                     // npy_set_floatstatus_underflow(); // Implement this if needed
-    //                 }
-    //             }
-    //             return h_sgn;
-    //         }
-    //         // Make the subnormal significand
-    //         let mut f_exp = f_exp >> 23;
-    //         f_sig = 0x00800000 + (f & 0x007fffff);
-    //         if NPY_HALF_GENERATE_UNDERFLOW {
-    //             // If it's not exactly represented, it underflowed
-    //             if (f_sig & ((1 << (126 - f_exp)) - 1)) != 0 {
-    //                 // npy_set_floatstatus_underflow(); // Implement this if needed
-    //             }
-    //         }
-    //         // Usually the significand is shifted by 13. For subnormals an additional shift needs to occur.
-    //         f_sig >>= 113 - f_exp;
-    //         // Handle rounding by adding 1 to the bit beyond half precision
-    //         if NPY_HALF_ROUND_TIES_TO_EVEN {
-    //             if ((f_sig & 0x00003fff) != 0x00001000) || (f & 0x000007ff) != 0 {
-    //                 f_sig += 0x00001000;
-    //             }
-    //         } else {
-    //             f_sig += 0x00001000;
-    //         }
-    //         h_sig = (f_sig >> 13) as u16;
-    //         // If the rounding causes a bit to spill into h_exp, it will increment h_exp from zero to one and h_sig will be zero.
-    //         return h_sgn + h_sig;
-    //     }
-
-    //     // Regular case with no overflow or underflow
-    //     h_exp = ((f_exp - 0x38000000) >> 13) as u16;
-    //     f_sig = f & 0x007fffff;
-    //     // Handle rounding by adding 1 to the bit beyond half precision
-    //     if NPY_HALF_ROUND_TIES_TO_EVEN {
-    //         if (f_sig & 0x00003fff) != 0x00001000 {
-    //             f_sig += 0x00001000;
-    //         }
-    //     } else {
-    //         f_sig += 0x00001000;
-    //     }
-    //     h_sig = (f_sig >> 13) as u16;
-    //     // If the rounding causes a bit to spill into h_exp, it will increment h_exp by one and h_sig will be zero.
-    //     if NPY_HALF_GENERATE_OVERFLOW {
-    //         let mut h_sig = h_sig + h_exp;
-    //         if h_sig == 0x7c00 {
-    //             // npy_set_floatstatus_overflow(); // Implement this if needed
-    //         }
-    //         return h_sgn + h_sig;
-    //     } else {
-    //         return h_sgn + h_exp + h_sig;
-    //     }
-    // }
-    pub fn npy_float_to_half(&mut self, f: f32) -> u16 {
-        //let fbits: u32 = f.to_bits();
-        //self.npy_floatbits_to_halfbits(bits)
-        let half_float = f16::from_f32(f);
-        half_float.to_bits()
-    }
 }
 
 #[bisync]
@@ -3684,46 +3583,47 @@ pub fn from_lsb_to_mv(lsb: i16) -> f32 {
 }
 
 /*
- * Original conversion routines taken from: https://github.com/numpy/numpy
+ * Converts a 32-bit single-precision value to a 16-bit half-precision
+ * representation and returns the raw bits.
  *
- * Converts from half-precision (16-bit) float number to single precision (32-bit).
+ * # Description
  *
- * uint32_t  static uint32_t ToFloatBits(uint16_t h);
- * Released under BSD-3-Clause License
+ * Uses the `half` crate to convert a native `f32` into an IEEE 754
+ * half-precision (`f16`) value, and then returns its bit pattern as `u16`.
+ *
+ * # Parameters
+ *
+ * * `float`: 32-bit single-precision floating-point value to be converted.
+ *
+ * # Return
+ *
+ * * `u16`: Bit pattern of the corresponding IEEE 754 half-precision value.
+ */
+pub fn from_single_precision_to_half(float: f32) -> u16 {
+    f16::from_f32(float).to_bits()
+}
+
+/*
+ * Converts a 16-bit half-precision floating-point value to a 32-bit
+ * single-precision representation.
+ *
+ * # Description
+ *
+ * Interprets the input `u16` as an IEEE 754 half-precision (`f16`) bit pattern,
+ * and converts it to a native `f32` using the `half` crate
+ *
+ * # Parameters
+ *
+ * * `half`: 16-bit value containing the half-precision float bit pattern.
+ *
+ * # Returns
+ *
+ * * `f32`: 16-bit value in single-precision representation.
  */
 #[bisync]
-pub fn from_half_to_single_precision(h: u16) -> u32 {
-    let mut h_exp = h & 0x7c00;
-    let f_sgn: u32 = ((h as u32) & 0x8000) << 16;
-    match h_exp {
-        0x0000 => {
-            // 0 or subnormal
-            let mut h_sig = h & 0x03ff;
-            // Signed zero
-            if h_sig == 0 {
-                return f_sgn;
-            }
-            // Subnormal
-            h_sig <<= 1;
-            while (h_sig & 0x0400) == 0 {
-                h_sig <<= 1;
-                h_exp += 1;
-            }
-
-            let f_exp = ((127 - 15 - h_exp) as u32) << 23;
-            let f_sig = ((h_sig & 0x03ff) as u32) << 13;
-            f_sgn + f_exp + f_sig
-        }
-        0x7c00 => {
-            //inf or NaN
-            // All-ones exponent and a copy of the significand
-            f_sgn + 0x7f800000 + (((h & 0x03ff) as u32) << 13)
-        }
-        _ => {
-            // normalized
-            f_sgn + (((h & 0x7fff) as u32) << 13)
-        }
-    }
+pub fn from_half_to_single_precision(half: u16) -> f32 {
+    let half = f16::from_bits(half);
+    half.to_f32()
 }
 
 #[cfg(feature = "passthrough")]
@@ -3929,7 +3829,3 @@ pub enum I2CAddress {
 
 #[bisync]
 pub const ID: u8 = 0x70;
-
-// const NPY_HALF_GENERATE_OVERFLOW: bool = false; // do not trigger FP overflow
-// const NPY_HALF_GENERATE_UNDERFLOW: bool = false; // do not trigger FP underflow
-// const NPY_HALF_ROUND_TIES_TO_EVEN: bool = true;

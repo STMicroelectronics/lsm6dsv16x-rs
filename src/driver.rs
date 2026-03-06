@@ -3308,7 +3308,7 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     ///
     /// DUR Duration of maximum time gap for double tap recognition. This register expresses
     /// the maximum time between two consecutive detected taps to determine a double tap event.
-    /// If the DUR_[3:0] bits are set to a different value, 1LSB corresponds to 32/ODR_XL time.
+    /// If the DUR_\[3:0\] bits are set to a different value, 1LSB corresponds to 32/ODR_XL time.
     pub async fn tap_time_windows_set(
         &mut self,
         val: TapTimeWindows,
@@ -3331,7 +3331,7 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     ///
     /// DUR Duration of maximum time gap for double tap recognition. This register expresses
     /// the maximum time between two consecutive detected taps to determine a double tap event.
-    /// If the DUR_[3:0] bits are set to a different value, 1LSB corresponds to 32/ODR_XL time.
+    /// If the DUR_\[3:0\] bits are set to a different value, 1LSB corresponds to 32/ODR_XL time.
     pub async fn tap_time_windows_get(&mut self) -> Result<TapTimeWindows, Error<B::Error>> {
         let tap_dur = TapDur::read(self).await?;
 

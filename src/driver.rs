@@ -3512,72 +3512,58 @@ impl<B: BusOperation, T: DelayNs> Lsm6dsv16x<B, T, MainBank> {
     }
 }
 
-#[bisync]
 pub fn from_sflp_to_mg(lsb: i16) -> f32 {
     (lsb as f32) * 0.061
 }
 
-#[bisync]
 pub fn from_fs2_to_mg(lsb: i16) -> f32 {
     (lsb as f32) * 0.061
 }
 
-#[bisync]
 pub fn from_fs4_to_mg(lsb: i16) -> f32 {
     (lsb as f32) * 0.122
 }
 
-#[bisync]
 pub fn from_fs8_to_mg(lsb: i16) -> f32 {
     (lsb as f32) * 0.244
 }
 
-#[bisync]
 pub fn from_fs16_to_mg(lsb: i16) -> f32 {
     (lsb as f32) * 0.488
 }
 
-#[bisync]
 pub fn from_fs125_to_mdps(lsb: i16) -> f32 {
     (lsb as f32) * 4.375
 }
 
-#[bisync]
 pub fn from_fs250_to_mdps(lsb: i16) -> f32 {
     (lsb as f32) * 8.750
 }
 
-#[bisync]
 pub fn from_fs500_to_mdps(lsb: i16) -> f32 {
     (lsb as f32) * 17.50
 }
 
-#[bisync]
 pub fn from_fs1000_to_mdps(lsb: i16) -> f32 {
     (lsb as f32) * 35.0
 }
 
-#[bisync]
 pub fn from_fs2000_to_mdps(lsb: i16) -> f32 {
     (lsb as f32) * 70.0
 }
 
-#[bisync]
 pub fn from_fs4000_to_mdps(lsb: i16) -> f32 {
     (lsb as f32) * 140.0
 }
 
-#[bisync]
 pub fn from_lsb_to_celsius(lsb: i16) -> f32 {
     (lsb as f32) / 256.0 + 25.0
 }
 
-#[bisync]
 pub fn from_lsb_to_nsec(lsb: u32) -> f32 {
     (lsb as f32) * 21750.0
 }
 
-#[bisync]
 pub fn from_lsb_to_mv(lsb: i16) -> f32 {
     (lsb as f32) / 78.0
 }
@@ -3620,7 +3606,6 @@ pub fn from_single_precision_to_half(float: f32) -> u16 {
  *
  * * `f32`: 16-bit value in single-precision representation.
  */
-#[bisync]
 pub fn from_half_to_single_precision(half: u16) -> f32 {
     let half = f16::from_bits(half);
     half.to_f32()

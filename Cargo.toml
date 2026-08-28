@@ -26,6 +26,9 @@ st-mem-bank-macro = "2.0.0"
 bisync = "0.3.0"
 embedded-hal-async = "1.0.0"
 
+[patch.crates-io]
+bisync = { path = "vendor/bisync" }
+
 # Features
 # --------
 # - By default the async API is enabled via the `async` feature.

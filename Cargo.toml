@@ -23,7 +23,7 @@ half = { version = "1.7", default-features = false }
 st-mems-bus = "2.0.0"
 derive_more = { version = "2.0.1", default-features = false, features = [ "try_from" ] }
 st-mem-bank-macro = "2.0.0"
-bisync = "0.3.0"
+bisync2 = "0.3.2"
 embedded-hal-async = "1.0.0"
 
 # Features
